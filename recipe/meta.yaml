@@ -1,0 +1,61 @@
+{% set name = "tree_sitter" %}
+{% set version = "0.26.0" %}
+
+package:
+  name: {{ name }}
+  version: {{ version }}
+
+source:
+  url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/tree_sitter-{{ version }}.tar.gz
+  sha256: b40c219edccc4564530c96f8f1556f6202b37cda964d1cbd7bd2b7e68b40a245
+
+build:
+  number: 0
+  # skip bound follows upstream requires-python >=3.10 (pyproject.toml)
+  skip: true  # [py<310]
+  script:
+    # CFLAGS carried over from the conda-forge recipe
+    - export CFLAGS="-D_BSD_SOURCE"  # [unix]
+    - {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ stdlib('c') }}
+  host:
+    - python
+    - pip
+    - setuptools >=43
+  run:
+    - python
+
+test:
+  imports:
+    - tree_sitter
+  commands:
+    - python -c "import tree_sitter; assert tree_sitter.LANGUAGE_VERSION == 15, tree_sitter.LANGUAGE_VERSION"
+    - python -c "import tree_sitter; assert tree_sitter.MIN_COMPATIBLE_LANGUAGE_VERSION == 13, tree_sitter.MIN_COMPATIBLE_LANGUAGE_VERSION"
+    - pip check
+  requires:
+    - pip
+
+about:
+  home: https://github.com/tree-sitter/py-tree-sitter
+  doc_url: https://tree-sitter.github.io/py-tree-sitter/
+  dev_url: https://github.com/tree-sitter/py-tree-sitter
+  summary: Python bindings to the Tree-sitter parsing library
+  description: >
+    Provides Python bindings to the Tree-sitter parsing library, an incremental
+    parsing system for building concrete syntax trees from source code, with
+    support for many programming languages and editors.
+  license: MIT AND EPL-2.0
+  license_family: Other
+  license_file:
+    - LICENSE
+    - tree_sitter/core/lib/src/unicode/LICENSE
+
+extra:
+  recipe-maintainers:
+    - danielnachun
+    - thewchan
+    - davidbrochart
